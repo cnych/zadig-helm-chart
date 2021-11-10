@@ -1,0 +1,39 @@
+apiVersion: v2
+appVersion: 1.6.0
+dependencies:
+- condition: tags.enterprise
+  name: aslan-x
+  repository: ""
+  version: 1.0.0
+- condition: tags.enterprise
+  name: clair
+  repository: ""
+  version: 1.1.0
+- condition: tags.collie
+  name: collie
+  repository: ""
+  version: 1.1.0
+- condition: tags.enterprise
+  name: enterprise-doc
+  repository: ""
+  version: 1.1.0
+- condition: tags.ingressController
+  name: ingress-nginx
+  repository: https://kubernetes.github.io/ingress-nginx
+  version: 2.16.0
+- condition: tags.ci-support
+  name: sonar
+  repository: ""
+  version: 1.1.0
+- condition: tags.minio
+  name: minio
+  repository: https://charts.bitnami.com/bitnami
+  version: 7.0.0
+- condition: tags.mongodb
+  name: mongodb
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.20.0
+description: A Helm chart for Zadig
+name: zadig
+type: application
+version: 1.6.0

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: poetry
+  labels:
+    {{- include "zadig.microservice.poetry.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp
+      port: {{ include "zadig.microservice.poetry.port" . }}
+      protocol: TCP
+      targetPort: {{ include "zadig.microservice.poetry.port" . }}
+  selector:
+    {{- include "zadig.microservice.poetry.selectorLabels" . | nindent 4 }}

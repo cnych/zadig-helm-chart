@@ -1,0 +1,98 @@
+{{- $apiIsStable := eq (include "zadig.ingress.isStable" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "zadig.ingress.supportsPathType" .) "true" -}}
+{{- $ingressClass := index .Values "ingress-nginx" "controller" "ingressClass" }}
+apiVersion: {{ include "zadig.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: pe-main
+  annotations:
+    {{- if $ingressClass }}
+    kubernetes.io/ingress.class: {{ $ingressClass }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  labels:
+    {{- include "zadig.labels" . | nindent 4 }}
+spec:
+  rules:
+  {{- if eq .Values.endpoint.type "FQDN" }}
+  - host: {{ required ".Values.endpoint.FQDN is required for FQDN" .Values.endpoint.FQDN }}
+    http:
+  {{- else }}
+  - http:
+  {{- end }}
+      paths:
+      - path: /api/hub
+        {{- if $ingressSupportsPathType }}
+        pathType: Prefix
+        {{- end }}
+        backend:
+          {{- if $apiIsStable }}
+          service:
+            name: aslan
+            port:
+              number: {{ include "zadig.microservice.aslan.port" . }}
+          {{- else }}
+          serviceName: aslan
+          servicePort: {{ include "zadig.microservice.aslan.port" . }}
+          {{- end }}
+      - path: /
+        {{- if $ingressSupportsPathType }}
+        pathType: Prefix
+        {{- end }}
+        backend:
+          {{- if $apiIsStable }}
+          service:
+            name: zadig-portal
+            port:
+              number: 80
+          {{- else }}
+          serviceName: zadig-portal
+          servicePort: 80
+          {{- end }}
+      {{- if .Values.tags.enterprise }}
+      - path: /zadig/
+        {{- if $ingressSupportsPathType }}
+        pathType: Prefix
+        {{- end }}
+        backend:
+          {{- if $apiIsStable }}
+          service:
+            name: zadig-x-doc
+            port:
+              number: 80
+          {{- else }}
+          serviceName: zadig-x-doc
+          servicePort: 80
+          {{- end }}
+      - path: /api/collie
+        {{- if $ingressSupportsPathType }}
+        pathType: Prefix
+        {{- end }}
+        backend:
+          {{- if $apiIsStable }}
+          service:
+            name: collie-server
+            port:
+              number: 28080
+          {{- else }}
+          serviceName: collie-server
+          servicePort: 28080
+          {{- end }}
+      - path: /sonar/
+        {{- if $ingressSupportsPathType }}
+        pathType: Prefix
+        {{- end }}
+        backend:
+          {{- if $apiIsStable }}
+          service:
+            name: sonarqube
+            port:
+              number: 80
+          {{- else }}
+          serviceName: sonarqube
+          servicePort: 80
+          {{- end }}
+      {{- end }}

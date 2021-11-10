@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clair
+  labels:
+    {{- include "zadig.microservice.clair.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.clair.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.clair.selectorLabels" . | nindent 8 }}
+    spec:
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+      containers:
+        - name: clair
+          image: "{{- .Values.server.image.repository -}}:{{- .Values.server.image.tag -}}"
+          volumeMounts:
+            - name: shared-data
+              mountPath: /usr/share/clair
+          ports:
+            - protocol: TCP
+              name: clair
+              containerPort: 6060
+            - protocol: TCP
+              name: clair-health
+              containerPort: 6061
+        - name: dockerscan
+          image: "{{- .Values.client.image.repository -}}:{{- .Values.client.image.tag -}}"
+          volumeMounts:
+            - name: shared-data
+              mountPath: /usr/share/clair
+          ports:
+            - protocol: TCP
+              name: dockerscan
+              containerPort: {{ include "zadig.microservice.clair.client.port" . }}
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+            limits:
+              cpu: 512m
+              memory: 1Gi
+          env:
+            - name: TEMPFILEPATH
+              value: /usr/share/clair
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

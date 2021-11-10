@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    {{- include "zadig.db.postgres.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ include "zadig.db.postgres.port" . }}
+  selector:
+    {{- include "zadig.db.postgres.selectorLabels" . | nindent 4 }}

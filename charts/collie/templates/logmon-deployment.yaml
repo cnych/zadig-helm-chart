@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logmon
+  labels:
+    {{- include "zadig.microservice.collie.logmon.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.collie.logmon.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.collie.logmon.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: collie-logmon
+          image: {{ .Values.logmon.image.repository }}:{{ .Values.logmon.image.tag }}
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: collie-server-configmap
+          resources:
+            limits:
+              cpu: "1"
+              memory: 256M
+            requests:
+              cpu: 10m
+              memory: 10Mi

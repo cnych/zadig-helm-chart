@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonar-mysql
+  labels:
+    {{- include "zadig.microservice.sonar.mysql.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-3306-3306
+      port: 3306
+      protocol: TCP
+      targetPort: 3306
+  selector:
+    {{- include "zadig.microservice.sonar.mysql.selectorLabels" . | nindent 4 }}

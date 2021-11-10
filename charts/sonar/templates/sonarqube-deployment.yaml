@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarqube
+  labels:
+    {{- include "zadig.microservice.sonar.qube.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.sonar.qube.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.sonar.qube.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: sonarqube
+          image: ccr.ccs.tencentyun.com/koderover-rc/sonarqube:7.4-community-20200518
+          ports:
+            - containerPort: 9000
+          env:
+            - name: SONARQUBE_WEB_CONTEXT
+              value: /sonar
+            - name: SONARQUBE_JDBC_USERNAME
+              value: koderover
+            - name: SONARQUBE_JDBC_PASSWORD
+              value: koderover@2019
+            - name: SONARQUBE_JDBC_URL
+              value: "jdbc:mysql://sonar-mysql:3306/koderoversonar?useSSL=false&maxAllowedPacket=200000000&useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance"
+          resources:
+            limits:
+              cpu: "1"
+              memory: 4Gi
+            requests:
+              cpu: 10m
+              memory: 10Mi
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

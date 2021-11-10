@@ -1,0 +1,43 @@
+{{- $apiIsStable := eq (include "zadig.ingress.isStable" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "zadig.ingress.supportsPathType" .) "true" -}}
+{{- $ingressClass := index .Values "ingress-nginx" "controller" "ingressClass" }}
+apiVersion: {{ include "zadig.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: poetry
+  annotations:
+      {{- if $ingressClass }}
+      kubernetes.io/ingress.class: {{ $ingressClass }}
+      {{- end }}
+      nginx.ingress.kubernetes.io/proxy-connect-timeout: "120"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      #/api/aslan/project will be rewritten to /api/project before sending request to endpoint
+      ingress.kubernetes.io/rewrite-target: /directory/$2
+      nginx.ingress.kubernetes.io/rewrite-target: /directory/$2
+  labels:
+    {{- include "zadig.labels" . | nindent 4 }}
+spec:
+  rules:
+  {{- if eq .Values.endpoint.type "FQDN" }}
+  - host: {{ required ".Values.endpoint.FQDN is required for FQDN" .Values.endpoint.FQDN }}
+    http:
+  {{- else }}
+  - http:
+  {{- end }}
+      paths:
+      - path: /api/directory(/|$)(.*)
+        {{- if $ingressSupportsPathType }}
+        pathType: Prefix
+        {{- end }}
+        backend:
+          {{- if $apiIsStable }}
+          service:
+            name: poetry
+            port:
+              number: {{ include "zadig.microservice.poetry.port" . }}
+          {{- else }}
+          serviceName: poetry
+          servicePort: {{ include "zadig.microservice.poetry.port" . }}
+          {{- end }}

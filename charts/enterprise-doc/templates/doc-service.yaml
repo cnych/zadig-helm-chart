@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zadig-x-doc
+  labels:
+    {{- include "zadig.microservice.enterpriseDoc.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "zadig.microservice.enterpriseDoc.selectorLabels" . | nindent 4 }}
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

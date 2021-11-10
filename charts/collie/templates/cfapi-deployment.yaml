@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfapi
+  labels:
+    {{- include "zadig.microservice.collie.cfapi.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.collie.cfapi.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.collie.cfapi.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: collie-cfapi
+          image: {{ .Values.cfapi.image.repository }}:{{ .Values.cfapi.image.tag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: {{ include "zadig.microservice.collie.cfapi.port" . }}
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: 128M
+            requests:
+              cpu: 10m
+              memory: 10Mi

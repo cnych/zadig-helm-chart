@@ -1,0 +1,33 @@
+{{- if .Values.mongodb.persistence.pv -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zadig-reserved-pv
+  labels:
+    {{- include "zadig.labels" . | nindent 4 }}
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/zadig/data"
+    type: Directory
+{{ end }}
+{{- if .Values.minio.persistence.pv -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: task-pv-volume
+  labels:
+    {{- include "zadig.labels" . | nindent 4 }}
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/zadig/data2"
+    type: Directory
+{{- end -}}

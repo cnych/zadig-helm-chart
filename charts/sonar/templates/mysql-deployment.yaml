@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonar-mysql
+  labels:
+    {{- include "zadig.microservice.sonar.mysql.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.sonar.mysql.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.sonar.mysql.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: koderover@2019
+            - name: MYSQL_PASSWORD
+              value: koderover@2019
+            - name: MYSQL_USER
+              value: koderover
+            - name: MYSQL_DATABASE
+              value: koderoversonar
+          image: ccr.ccs.tencentyun.com/koderover-public/library-mysql:5.7.14
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: mysqld
+          ports:
+            - containerPort: 3306
+              name: mysql
+              protocol: TCP

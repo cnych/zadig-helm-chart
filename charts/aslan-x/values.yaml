@@ -1,0 +1,38 @@
+# Default values for aslan-x.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicas: 1
+
+imagePullSecrets:
+  - name: qn-registry-secret
+
+image:
+  repository: ccr.ccs.tencentyun.com/koderover-rc/aslanx
+  pullPolicy: IfNotPresent
+  tag: 20210721102536-13-main
+
+resources:
+  limits:
+    cpu: 2
+    memory: 1Gi
+
+protocol: http
+mongodb:
+  connectionString: mongodb://zadig-mongodb:27017
+  db: zadig
+minio:
+  endpoint: zadig-minio:9000
+  bucket: bucket
+  accessKey:
+    password: AKIAIOSFODNN72019EXAMPLE
+  secretKey:
+    password: wJalrXUtnFEMI2019K7MDENGbPxRfiCYEXAMPLEKEY
+  protocol: http
+endpoint:
+  # endpoint.type is the type of Zadig system endpoint. It can be of type FQDN or IP. By default the type is FQDN.
+  type: FQDN
+  # FQDN is the domain name the user choose to visit in. It must be set if endpoint is of type FQDN. By default it is githubid.ko.coderover.cn
+  FQDN: githubid.ko.coderover.cn
+  # IP is the ip of one of the cluster's worker node. It must be set if the endpoint is of type IP. By default it is empty.
+  IP:

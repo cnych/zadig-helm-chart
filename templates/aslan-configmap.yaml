@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aslan-config
+  labels:
+    {{- include "zadig.microservice.aslan.labels" . | nindent 4 }}
+data:
+  # --------------------------------------------------------------------------------------
+  # common
+  # --------------------------------------------------------------------------------------
+  ADDRESS: {{ default "http" .Values.protocol }}://{{- include "zadig.endpoint" . }}
+  ENTERPRISE: {{ .Values.tags.enterprise | quote }}
+
+  # --------------------------------------------------------------------------------------
+  # logging
+  # level: 0(Debug), 1(Info), 2(Warn), 3(Error), 4(Panic), 5(Fatal)
+  # --------------------------------------------------------------------------------------
+  LOG_LEVEL: Info
+
+  # --------------------------------------------------------------------------------------
+  # mongo
+  # --------------------------------------------------------------------------------------
+  MONGODB_CONNECTION_STRING: {{ .Values.mongodb.connectionString }}
+  ASLAN_DB: {{ default "zadig" .Values.mongodb.db }}
+
+  # --------------------------------------------------------------------------------------
+  # kube
+  # --------------------------------------------------------------------------------------
+  KUBE_SERVER_ADDR: {{ default "" .Values.kubernetes.server | quote }}
+
+  # --------------------------------------------------------------------------------------
+  # build
+  # --------------------------------------------------------------------------------------
+  NSQLOOKUP_ADDRS: nsqlookup-0.nsqlookupd:4161,nsqlookup-1.nsqlookupd:4161,nsqlookup-2.nsqlookupd:4161
+
+  REAPER_IMAGE: {{ .Values.microservice.reaperPlugin.image.repository }}:{{ .Values.microservice.reaperPlugin.image.tag }}
+  REAPER_BINARY_FILE: http://resource-server/reaper
+  PREDATOR_IMAGE:  {{ .Values.microservice.predator.image.repository }}:{{ .Values.microservice.predator.image.tag | default .Chart.AppVersion }}
+  JENKINS_BUILD_IMAGE: {{ .Values.microservice.jenkins.image.repository }}:{{ .Values.microservice.jenkins.image.tag | default .Chart.AppVersion }}
+
+  # --------------------------------------------------------------------------------------
+  # github app
+  # --------------------------------------------------------------------------------------
+  GITHUB_KNOWN_HOST: {{ .Values.github.knownHost | default "" | quote }}
+  GITHUB_SSH_KEY: {{ .Values.github.sshKey  | default "" | quote }}
+
+  # --------------------------------------------------------------------------------------
+  # docker
+  # --------------------------------------------------------------------------------------
+  DOCKER_HOSTS: tcp://dind-0.dind:2375,tcp://dind-1.dind:2375,tcp://dind-2.dind:2375
+  POETRY_API_ROOT_KEY: {{ include "zadig.rootToken" . }}
+  DEFAULT_INGRESS_CLASS: {{ index .Values "ingress-nginx" "controller" "ingressClass" | quote }}
+
+  # -------------------------------------------------------------------------------
+  # UNKNOWN USE
+  # -------------------------------------------------------------------------------
+  USE_CLASSIC_BUILD: {{ default false .Values.microservice.aslan.useClassicBuild | quote }}
+  CUSTOM_DNS_NOT_SUPPORTED: {{ default false .Values.microservice.aslan.customDNSNotSupported | quote}}
+  OLD_ENV_SUPPORTED: {{ default false .Values.microservice.aslan.oldEnvSupported | quote }}
+
+  HUB_AGENT_IMAGE: {{ .Values.microservice.hubAgent.image.repository }}:{{ .Values.microservice.hubAgent.image.tag | default .Chart.AppVersion }}
+
+  SERVICE_START_TIMEOUT: {{ default "300" .Values.microservice.aslan.serviceStartTimeout | quote }}
+  DEFAULT_REGISTRY: "https://ccr.ccs.tencentyun.com"
+  DEFAULT_REGISTRY_AK: "100008469911"
+  DEFAULT_REGISTRY_SK: "nCmfTA+YjhF2*C5J"
+  DEFAULT_REGISTRY_NAMESPACE: "trial"
+
+  S3STORAGE_ENDPOINT: {{ .Values.minio.endpoint }}
+  S3STORAGE_AK: {{ .Values.minio.accessKey.password }}
+  S3STORAGE_SK: {{ .Values.minio.secretKey.password }}
+  S3STORAGE_BUCKET: {{ .Values.minio.bucket }}
+  S3STORAGE_PROTOCOL: {{ .Values.minio.protocol }}
+
+  KODESPACE_VERSION: {{ .Values.microservice.kodespace.version }}

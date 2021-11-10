@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poetry
+  labels:
+    {{- include "zadig.microservice.poetry.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.microservice.poetry.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.poetry.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.poetry.selectorLabels" . | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: poetry
+          image: "{{- .Values.microservice.poetry.image.repository -}}:{{- .Values.microservice.poetry.image.tag | default .Chart.AppVersion -}}"
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+            limits:
+              cpu: 512m
+              memory: 1Gi
+          env:
+            - name: PATH
+              value: /go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            - name: XROOTAPIKEY
+              value: {{ include "zadig.rootToken" . }}
+            - name: EMAILREDIRECTURL
+              value: {{ default "http" .Values.protocol }}://{{ include "zadig.endpoint" . }}/v1/quality/ci
+            - name: MEASUREINFOEMAILURL
+              value: {{ default "http" .Values.protocol }}://{{ include "zadig.endpoint" . }}/v1/quality/cd
+            - name: POETRY_WEB_PREFIX
+              value: {{ default "http" .Values.protocol }}://{{ include "zadig.endpoint" . }}/api
+            - name: USER_FILTER
+              value: (&(objectClass=user)(sAMAccountName=%s))
+            - name: GROUP_FILTER
+              value: (&(objectClass=user)(!(objectClass=computer)))
+            - name: GOLANG_VERSION
+              value: 1.11.4
+            - name: GOPATH
+              value: /go
+            - name: PROJECT_NAME
+              value: poetry
+            - name: PROJECT_DIR
+              value: /go/src/zhuzhan/teams/backend/poetry
+            - name: ASLAN_ADDRESS
+              value: http://aslan:25000/api
+            - name: ASLANX_ADDRESS
+              value: http://aslan-x:25002/api
+            - name: MGO_ADDR
+              value: {{ .Values.mongodb.connectionString }}
+            - name: MGO_DB
+              value: {{ default "zadig" .Values.mongodb.db }}
+            - name: OAUTH2_CALLBACK_ROOT
+              value: {{ default "http" .Values.protocol }}://{{ include "zadig.endpoint" . }}/api
+            - name: SITE_ROOT
+              value: {{ default "http" .Values.protocol }}://{{ include "zadig.endpoint" . }}
+            {{- if .Values.oauth2 }}
+            - name: OAUTH2_CLIENT_ID
+              value: {{ .Values.oauth2.clientId }}
+            - name: OAUTH2_CLIENT_SECRET
+              value: {{ default "" .Values.oauth2.clientSecret }}
+            {{- end }}
+            - name: GITHUB_OAUTH_CLIENT_ID
+              value: {{ .Values.microservice.poetry.githubOAuth.clientID }}
+            - name: GITHUB_OAUTH_CLIENT_SECRET
+              value: {{ .Values.microservice.poetry.githubOAuth.clientSecret }}
+          workingDir: /root/zhuzhan/go/src/zhuzhan/teams/backend/poetry/cmd/server
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

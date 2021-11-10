@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collie-server-configmap
+  labels:
+    {{- include "zadig.microservice.collie.server.labels" . | nindent 4 }}
+data:
+  # nsqd (http) and nsqlookupd address
+  NSQ_NSQD_ADDR: collie-nsqd:4151
+  NSQ_NSQLOOKUPDADDRLIST: nsqlookup-0.nsqlookupd:4161,nsqlookup-1.nsqlookupd:4161,nsqlookup-2.nsqlookupd:4161
+  # mongo url
+  MONGO_URL: {{ .Values.server.database.mongodb.connectionString }}
+
+  # the api url of collie required by engine
+  API_BASE_URL: http://collie-server:{{ include "zadig.microservice.collie.server.port" . }}/api/collie
+
+  # The image of engine
+  ENGINE_IMAGE: {{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}
+
+  # The main docker host
+  DOCKER_HOSTS: tcp://dind-0.dind:2375,tcp://dind-1.dind:2375,tcp://dind-2.dind:2375
+
+  # log level
+  LOG_LEVEL: info
+
+  # the location of the cf-api which is required to parse pipeline yaml
+  CF_API_ENDPOINT: cfapi:{{ include "zadig.microservice.collie.cfapi.port" . }}
+
+  # remove the comment to enable clusters managed by zadig
+  #SPOCK_HUB_SERVER_ADDR=http://hub-server:26000
+  # whether to enable the cluster where collie running
+  IN_KUBE_CLUSTER_ENABLED: "true"
+
+  # the kubeconfig path that used as kube context
+  # KUBE_CONFIG_PATH: \${HOME}/.kube/config
+  POETRY_API_ADDR: http://poetry:34001
+  POETRY_API_TOKEN: {{ include "zadig.rootToken" . }}
+
+  SPOCK_API: http://aslan:25000/api
+  TASK_LIMIT: "3"
+
+  PRODUCTION: "false"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: logmon
+  labels:
+    {{- include "zadig.microservice.collie.logmon.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ include "zadig.microservice.collie.logmon.port" . }}
+      targetPort: {{ include "zadig.microservice.collie.logmon.port" . }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "zadig.microservice.collie.logmon.selectorLabels" . | nindent 4 }}

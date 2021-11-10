@@ -1,0 +1,177 @@
+global:
+  encryption:
+    key: 9F11B4E503C7F2B577E5F9366BDDAB64
+# protocol is the internet protocol used to access zadig
+protocol: http
+microservice:
+  aslan:
+    #replica: 1
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/aslan
+      tag: 1.6.0-amd64
+      pullPolicy: Always
+    serviceStartTimeout: 600
+    resources:
+      limits:
+        cpu: 2
+        memory: 4Gi
+  cron:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/cron
+      tag: 1.6.0-amd64
+  dind:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-public/library-docker
+      tag: stable-dind
+    resources:
+      limits:
+        cpu: 4
+        memory: 8Gi
+  hubAgent:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/hub-agent
+      tag: 1.6.0-amd64
+  hubServer:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/hub-server
+      tag: 1.6.0-amd64
+  jenkins:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/jenkins-plugin
+      tag: 1.6.0-amd64
+  kodespace:
+    version: v1.1.0
+  podexec:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/podexec
+      tag: 1.6.0-amd64
+  poetry:
+    githubOAuth:
+      clientID: ""
+      clientSecret: ""
+    image:
+      pullPolicy: Always
+      repository: ccr.ccs.tencentyun.com/koderover-rc/poetry
+      tag: 1.6.0-amd64
+  predator:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/predator-plugin
+      tag: 1.6.0-amd64
+  resourceServer:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/resource-server
+      tag: 1.6.0-amd64
+      pullPolicy: Always
+  reaperPlugin:
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/reaper-plugin
+      tag: 1.6.0-amd64
+  warpdrive:
+    replicas: 2
+    image:
+      pullPolicy: Always
+      repository: ccr.ccs.tencentyun.com/koderover-rc/warpdrive
+      tag: 1.6.0-amd64
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+nsqd:
+  image:
+    repository: ccr.ccs.tencentyun.com/koderover-public/nsqio-nsq
+    tag: v1.0.0-compat
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi
+ua:
+  image:
+    repository: ccr.ccs.tencentyun.com/koderover-rc/ua
+    tag: 1.6.0-amd64
+    pullPolicy: IfNotPresent
+imagePullSecrets:
+  - name: qn-registry-secret
+github:
+  knownHost:
+  sshKey:
+kubernetes:
+  server:
+ingress-nginx:
+  fullnameOverride: zadig-ingress-nginx
+  imagePullSecrets:
+    - name: qn-registry-secret
+  controller:
+    admissionWebhooks:
+      # admission webhooks must be set to false if the cluster version is under 1.16
+      enabled: false
+    image:
+      repository: ccr.ccs.tencentyun.com/koderover-rc/ingress-nginx-controller
+      tag: v0.35.0
+      digest: ""
+    ingressClass: zadig-nginx
+    service:
+      type: NodePort
+      nodePorts:
+        # ingress-nginx.controller.service.nodePorts.http is the http port of the ingress-nginx controller service
+        # if ingress-nginx.controller.service.type is set to Loadbalancer, this field should not be set.
+        http: 31147
+minio:
+  # endpoint is the endpoint for the minio, if the user choose to provide their own minio
+  endpoint: zadig-minio:9000
+  # bucket is the bucket for zadig system to use.
+  bucket: bucket
+  # data persistence related parameter
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass:
+  # the default buckets to create during init process, split by comma or semicolon
+  defaultBuckets: "bucket"
+  fullnameOverride: zadig-minio
+  accessKey:
+    password: AKIAIOSFODNN72019EXAMPLE
+  secretKey:
+    password: wJalrXUtnFEMI2019K7MDENGbPxRfiCYEXAMPLEKEY
+  protocol: http
+mongodb:
+  connectionString: mongodb://zadig-mongodb:27017
+  db: zadig
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass:
+  auth:
+    enabled: false
+    rootPassword: zadig666
+  fullnameOverride: zadig-mongodb
+tags:
+  # enterprise is the main switch for the zadig version installed.
+  enterprise: false
+  # collie is the collie subchart switch
+  collie: false
+  # ci-support is the switch for installing sonarqube service. It is turned off by default.
+  ci-support: false
+  # mongodb is the switch for installing mongodb for zadig, if an external database is provided, set this to false
+  mongodb: true
+  # minio is the switch for installing minIO for zadig, if an external object storage is provided, set this to false
+  minio: true
+  # ingressControler is the switch for installing nginx-ingress controller. If a ingress class can be provided for zadig
+  # This value should be set to false
+  ingressController: true
+endpoint:
+  # endpoint.type is the type of Zadig system endpoint. It can be of type FQDN or IP. By default the type is FQDN.
+  type: FQDN
+  # FQDN is the domain name the user choose to visit in. It must be set if endpoint is of type FQDN. By default it is githubid.ko.coderover.cn
+  FQDN: githubid.ko.coderover.cn
+  # IP is the ip of one of the cluster's worker node. It must be set if the endpoint is of type IP. By default it is empty.
+  IP:
+frontend:
+  image:
+    pullPolicy: Always
+    repository: ccr.ccs.tencentyun.com/koderover-rc/zadig-portal
+    tag: 1.6.0-amd64
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aslanx
+  labels:
+    {{- include "zadig.microservice.aslan-x.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.aslan-x.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.aslan-x.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          name: aslanx
+          envFrom:
+            - configMapRef:
+                name: aslanx-config
+          ports:
+            - protocol: TCP
+              containerPort: {{ template "zadig.microservice.aslan-x.port" . }}
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | default 2 }}
+              memory: {{ .Values.resources.limits.memory | default "1Gi" }}
+            requests:
+              cpu: 1
+              memory: 500Mi

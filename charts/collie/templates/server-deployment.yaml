@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collie-server
+  labels:
+    {{- include "zadig.microservice.collie.server.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.collie.server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.collie.server.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "collie.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: collie-server
+          image: {{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: collie-server-configmap
+          ports:
+              - name: http
+                containerPort: {{ include "zadig.microservice.collie.server.port" . }}
+                protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/collie/api/health
+              port: {{ include "zadig.microservice.collie.server.port" . }}
+          readinessProbe:
+            httpGet:
+              path: /api/collie/api/health
+              port: {{ include "zadig.microservice.collie.server.port" . }}
+          resources:
+            limits:
+              cpu: "1"
+              memory: 256M
+            requests:
+              cpu: 10m
+              memory: 10Mi

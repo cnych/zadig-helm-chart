@@ -1,0 +1,26 @@
+# Default values for collie.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+imagePullSecrets:
+  - name: qn-registry-secret
+
+cfapi:
+  image:
+    repository: ccr.ccs.tencentyun.com/koderover-rc/collie-cfapi
+    tag: 20191204110518-8-master
+logmon:
+  image:
+    repository: ccr.ccs.tencentyun.com/koderover-rc/collie-logmon
+    tag: 20201217180845-v4.1.6
+server:
+  image:
+    repository: ccr.ccs.tencentyun.com/koderover-rc/collie-server
+    tag: 20210610200207-72-main
+  database:
+    mongodb:
+      connectionString: "mongodb://zadig-mongodb:27017/zadig"
+engine:
+  image:
+    repository: ccr.ccs.tencentyun.com/koderover-rc/collie-engine
+    tag: 20201217180934-v4.1.6

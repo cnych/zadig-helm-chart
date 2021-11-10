@@ -1,0 +1,7 @@
+1. Zadig has successfully been installed on your system.
+{{- if eq .Values.endpoint.type "FQDN" }}
+2. Use {{ .Values.endpoint.FQDN }} to access zadig system.
+{{- else }}
+{{- $nodeport := index .Values "ingress-nginx" "controller" "service" "nodePorts" "http" }}
+2. Use {{ .Values.endpoint.IP }}:{{ $nodeport }} to access zadig system.
+{{- end -}}

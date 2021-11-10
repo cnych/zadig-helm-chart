@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collie-nsqd
+  labels:
+    {{- include "zadig.microservice.collie.nsqd.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.collie.nsqd.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.collie.nsqd.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: nsqd
+          image: ccr.ccs.tencentyun.com/koderover-public/nsqio-nsq:v1.0.0-compat
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NSQD_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          command:
+            - /nsqd
+          args:
+            - -data-path
+            - /data
+            - -lookupd-tcp-address
+            - nsqlookup-0.nsqlookupd:4160
+            - -lookupd-tcp-address
+            - nsqlookup-1.nsqlookupd:4160
+            - -lookupd-tcp-address
+            - nsqlookup-2.nsqlookupd:4160
+            - -broadcast-address
+            - $(NSQD_POD_IP)
+          ports:
+            - protocol: TCP
+              name: tcp
+              containerPort: 4150
+            - protocol: TCP
+              name: http
+              containerPort: 4151
+          resources:
+            limits:
+              cpu: "1"
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 10Mi
